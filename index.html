@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Happy Birthday</title>
-</head>
+
 <style>
 body{
     margin:0;
@@ -13,27 +13,63 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    min-height:100vh;
     flex-direction:column;
     font-family:Arial, Helvetica, sans-serif;
-    text-align:center;
 }
 
-h1{
+/* COUNTDOWN */
+#countdown{
     position:absolute;
-    top:5vh;
-    font-size:clamp(20px, 5vw, 40px);
-    color:red;
-    opacity:0;
-    animation: fadeIn 2s ease forwards;
-    animation-delay:2s;
-    padding:0 10px;
+    font-size:100px;
+    font-weight:bold;
+    color:black;
+    z-index:10;
 }
 
+/* MESSAGE BOX */
+#messages{
+    position:absolute;
+    width:100%;
+    max-height:100vh;      /* ekran balandligini cheklaydi */
+    overflow-y:auto;      /* overflow bo‘lsa scroll chiqadi */
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    z-index:5;
+    padding-right:10px;
+}
+
+.messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background-color: #3f3f46; /* zinc-700 */
+  border-radius: 999px;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background-color: #52525b; /* zinc-600 */
+}
+
+.message{
+    font-size:clamp(18px,4vw,32px);
+    font-weight:bold;
+    opacity:0;
+    animation: fadeIn 1s forwards;
+}
+
+/* HEART */
 .heart-container{
     position:relative;
     transform:scale(0);
-    animation: popUp 2s ease forwards;
+    opacity:0;
 }
 
 .heart{
@@ -54,17 +90,10 @@ h1{
     border-radius:50%;
 }
 
-.heart:before{
-    top:-50%;
-    left:0;
-}
+.heart:before{ top:-50%; }
+.heart:after{ left:50%; }
 
-.heart:after{
-    left:50%;
-    top:0;
-}
-
-.z{
+/* .z{
     position:absolute;
     color:white;
     font-size:clamp(40px, 10vw, 80px);
@@ -72,10 +101,18 @@ h1{
     top:45%;
     left:50%;
     transform:translate(-50%,-50%);
-}
+} */
 
-@keyframes popUp{
-    to{ transform:scale(1); }
+.z{
+    position:absolute;
+    color:white;
+    font-size:clamp(18px, 4vw, 32px);
+    font-weight:bold;
+    text-align:center;
+    width:100%;
+    top:35%;
+    left:53%;
+    transform:translate(-50%,-50%);
 }
 
 @keyframes fadeIn{
@@ -90,37 +127,47 @@ canvas{
     height:100%;
 }
 </style>
+</head>
 
 <body>
 
-<h1>Happy Birthday My Love Zilolam ❤️</h1>
+<div id="countdown">3</div>
+
+<div id="messages"></div>
 
 <div class="heart-container">
     <div class="heart"></div>
-    <div class="z">Z</div>
+    <div class="z">Zilolam ❤️</div>
 </div>
 
 <canvas id="fireworks"></canvas>
+
 <script>
 const canvas = document.getElementById("fireworks");
 const ctx = canvas.getContext("2d");
+
+const heart = document.querySelector(".heart-container");
+const countdownEl = document.getElementById("countdown");
+const messagesBox = document.getElementById("messages");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let particles = [];
 
+/* FIREWORK */
 function createFirework(){
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height / 3;
 
-    for(let i=0;i<60;i++){
+    for(let i=0;i<80;i++){
         particles.push({
             x:x,
             y:y,
             angle:Math.random()*2*Math.PI,
             speed:Math.random()*6+2,
-            radius:2
+            radius:2,
+            color:`hsl(${Math.random()*360},100%,60%)`
         });
     }
 }
@@ -135,7 +182,7 @@ function draw(){
 
         ctx.beginPath();
         ctx.arc(p.x,p.y,p.radius,0,2*Math.PI);
-        ctx.fillStyle="red";
+        ctx.fillStyle=p.color;
         ctx.fill();
 
         if(p.speed < 0.5){
@@ -146,13 +193,91 @@ function draw(){
     requestAnimationFrame(draw);
 }
 
-setInterval(createFirework,1200);
 draw();
+
+/* TILLAR */
+const birthdayTexts = [
+    "Happy Birthday my love ❤️",                     // English
+    "Tug‘ilgan kuning bilan sevgilim ❤️",            // Uzbek
+    "С Днём Рождения, моя любовь ❤️",                // Russian
+    "Feliz Cumpleaños mi amor ❤️",                   // Spanish
+    "Joyeux Anniversaire mon amour ❤️",              // French
+    "Alles Gute zum Geburtstag meine Liebe ❤️",      // German
+    "Buon Compleanno amore mio ❤️",                  // Italian
+    "Doğum Günün Kutlu Olsun sevgilim ❤️",           // Turkish
+    "Parabéns meu amor ❤️",                          // Portuguese
+    "Gratulerer med dagen min kjære ❤️",             // Norwegian
+    "Hyvää syntymäpäivää rakkaani ❤️",               // Finnish
+    "Gefeliciteerd mijn liefde ❤️",                  // Dutch
+    "Sto Lat moja miłości ❤️",                       // Polish
+    "Χρόνια Πολλά αγάπη μου ❤️",                     // Greek
+    "La mulți ani iubirea mea ❤️",                   // Romanian
+    "Boldog születésnapot szerelmem ❤️",             // Hungarian
+    "عيد ميلاد سعيد يا حبي ❤️"                        // Arabic
+];
+
+/* COUNTDOWN */
+let countdown = 3;
+
+const countdownInterval = setInterval(()=>{
+    countdown--;
+    if(countdown > 0){
+        countdownEl.textContent = countdown;
+    } else {
+        countdownEl.textContent = "🎉";
+        clearInterval(countdownInterval);
+
+        setTimeout(()=>{
+            countdownEl.style.display="none";
+            startShow();
+        },1000);
+    }
+},1000);
+
+/* HAMMASINI BOSHLASH */
+function startShow(){
+
+    /* Salyut */
+    setInterval(createFirework,200);
+
+    /* Matnlar */
+    let index = 0;
+
+    const messageInterval = setInterval(()=>{
+        if(index < birthdayTexts.length){
+
+            const newText = document.createElement("div");
+            newText.classList.add("message");
+            newText.style.color = `hsl(${Math.random()*360},100%,45%)`;
+            newText.textContent = birthdayTexts[index];
+
+            messagesBox.appendChild(newText);
+            index++;
+
+        } else {
+            clearInterval(messageInterval);
+
+            /* 1️⃣ Yozuvlarni fade-out qilamiz */
+            messagesBox.style.transition = "opacity 1.5s ease";
+            messagesBox.style.opacity = "0";
+
+            /* 2️⃣ Keyin butunlay yo‘q qilamiz va yurak chiqadi */
+            setTimeout(()=>{
+                messagesBox.style.display = "none";
+
+                heart.style.transition="all 2s ease";
+                heart.style.opacity="1";
+                heart.style.transform="scale(1)";
+            },1500);
+        }
+    },1000);
+}
 
 window.addEventListener("resize",()=>{
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 });
 </script>
+
 </body>
 </html>
